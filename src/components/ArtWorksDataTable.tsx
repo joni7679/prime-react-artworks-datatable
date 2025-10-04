@@ -21,25 +21,24 @@ const ArtWorksDataTable: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
     const [selectedData, setSelectedData] = useState<ArtWork[] | null>(null);
-    const [selecteRow, setSelecteRow] = useState<ArtWork[]>([]);
     const [currentPage, setCurrentPage] = useState(0)
     const [rowClick, setRowClick] = useState<boolean>(true);
-    const [value, setValue] = useState<string>('');
+    const [inputVal, setInputValue] = useState<string>('');
     const op = useRef(null);
     const toast = useRef<Toast>(null);
 
-    // fetch  artworks  data here....
-    let fetchData = async (page: number) => {
+    const getArtWorksData = async (page: number) => {
         setLoading(true);
         try {
             let res = await axios.get(`https://api.artic.edu/api/v1/artworks?page=${page}`);
             let finalRes: ArtWork[] = res.data.data;
             console.log("finalres", finalRes);
             setData(finalRes)
+            console.log("finalres", finalRes);
             setTotal(res.data.pagination.total);
             setLoading(false)
         } catch (error) {
-            console.log("netWork Issu Plz Try again Leater", error)
+            console.error("Failed to fetch please try agin leater", error)
         }
         finally {
             setLoading(false)
@@ -47,60 +46,57 @@ const ArtWorksDataTable: React.FC = () => {
     }
 
     useEffect(() => {
-        fetchData(currentPage)
+        getArtWorksData(currentPage)
     }, [currentPage])
 
-    // paginator logic here..
-    const paginerPageChange = (e) => {
+    const handlePagination = (e) => {
         setCurrentPage(e.page)
     }
-    // how many row selected logic here...
-    let showError = () => {
-        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Plase Entet Any Number Of Value', life: 3000 });
 
+    const showError = () => {
+        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Please enter a valid number', life: 3000 });
     }
+
     const showSuccess = () => {
-        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'SuccessFully selected', life: 3000 });
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Rows  selected successfully', life: 3000 });
     }
-    const handelSubmit = () => {
-        let count: number = parseInt(value);
-        if (!value || count <= 0) {
+
+    const handleSubmit = () => {
+        const count: number = parseInt(inputVal);
+        if (!inputVal || count <= 0) {
             showError();
             return;
         }
-        let val = data.slice(0, count);
+        const val = data.slice(0, count);
         setSelectedData(val);
         showSuccess();
         op.current?.hide();
     }
-
-
-
-return (
-    <>
-        <Toast ref={toast} />
-        <div className="card">
-            <OverlayPanel ref={op} style={{ width: "20rem" }} >
-                <InputText style={{ width: "100%" }} value={value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
-                    placeholder="Plz Enter How Many Row You Selected"/>
-                <br /> <br />
-                <Button label="Submit" onClick={handelSubmit} />
-            </OverlayPanel>
-            <DataTable onClick={(e) => op.current.toggle(e)} paginator rows={12} value={data} lazy loading={loading}
-                totalRecords={total} selection={selectedData}
-                onSelectionChange={(e) => setSelectedData(e.value)} dataKey="id" tableStyle={{ minWidth: '50rem' }}
-                selectionMode={rowClick ? undefined : 'multiple'}
-                onPage={paginerPageChange}>
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="title" header="Title"></Column>
-                <Column field="place_of_origin" header="Place Of  Origin"></Column>
-                <Column field="artist_display" header="Arist Display"></Column>
-                <Column field="date_start" header="Date Start"></Column>
-                <Column field="date_end" header="Date End"></Column>
-            </DataTable>
-        </div>
-    </>
-)
+    return (
+        <>
+            <Toast ref={toast} />
+            <div className="card">
+                <OverlayPanel ref={op} style={{ width: "20rem" }} >
+                    <InputText style={{ width: "100%" }} value={inputVal} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
+                        placeholder="Please Enter a number" />
+                    <br /> <br />
+                    <Button label="Submit" onClick={handleSubmit} />
+                </OverlayPanel>
+                <DataTable onClick={(e) => op.current.toggle(e)} paginator rows={12} value={data} lazy loading={loading}
+                    totalRecords={total} selection={selectedData}
+                    onSelectionChange={(e) => setSelectedData(e.value)} dataKey="id" tableStyle={{ minWidth: '50rem' }}
+                    selectionMode={rowClick ? undefined : 'multiple'}
+                    onPage={handlePagination}>
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                    <Column field="title" header="Title"></Column>
+                    <Column field="place_of_origin" header="Place Of  Origin"></Column>
+                    <Column field="artist_display" header="Arist Display"></Column>
+                    <Column field="date_start" header="Date Start"></Column>
+                    <Column field="date_end" header="Date End"></Column>
+                </DataTable>
+            </div>
+        </>
+    )
 }
 
 export default ArtWorksDataTable;
