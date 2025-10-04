@@ -5,6 +5,7 @@ import axios from "axios";
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { Button } from 'primereact/button';
 import { InputText } from "primereact/inputtext";
+import { Toast } from 'primereact/toast';
 
 interface ArtWork {
     id: number;
@@ -25,6 +26,8 @@ const ArtWorksDataTable: React.FC = () => {
     const [rowClick, setRowClick] = useState<boolean>(true);
     const [value, setValue] = useState<string>('');
     const op = useRef(null);
+    const toast = useRef<Toast>(null);
+
     // fetch  artworks  data here....
     let fetchData = async (page: number) => {
         setLoading(true);
@@ -36,7 +39,7 @@ const ArtWorksDataTable: React.FC = () => {
             setTotal(res.data.pagination.total);
             setLoading(false)
         } catch (error) {
-            console.log("netWork Issu Plz Try Againg Leater", error)
+            console.log("netWork Issu Plz Try again Leater", error)
         }
         finally {
             setLoading(false)
@@ -52,24 +55,37 @@ const ArtWorksDataTable: React.FC = () => {
         setCurrentPage(e.page)
     }
     // how many row selected logic here...
-    const handelSubmit = () => {
-        
-
+    let showError = () => {
+        toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Plase Entet Any Number Of Value', life: 3000 });
 
     }
-
+    const showSuccess = () => {
+        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'SuccessFully selected', life: 3000 });
+    }
+    const handelSubmit = () => {
+        let count: number = parseInt(value);
+        if (!value || count <= 0) {
+            showError();
+            return;
+        }
+        let val = data.slice(0, count);
+        setSelectedData(val);
+        showSuccess();
+        op.current?.hide();
+    }
 
     return (
         <>
+            <Toast ref={toast} />
             <div className="card">
-                <OverlayPanel ref={op} style={{width:"20rem"}} >
-                    <InputText style={{width:"100%"}} value={value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
-                    placeholder="Plz Enter How Many Row YOu Selected"
-                    />
+                <OverlayPanel ref={op} style={{ width: "20rem" }} >
+                    <InputText style={{ width: "100%" }} value={value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+                        placeholder="Plz Enter How Many Row You Selected" />
                     <br /> <br />
-                    <Button label="Submit" />
+                    <Button label="Submit" onClick={handelSubmit} />
                 </OverlayPanel>
-                <DataTable onClick={(e) => op.current.toggle(e)} paginator rows={10} value={data} lazy loading={loading} totalRecords={total} selection={selectedData}
+                <DataTable onClick={(e) => op.current.toggle(e)} paginator rows={12} value={data} lazy loading={loading}
+                    totalRecords={total} selection={selectedData}
                     onSelectionChange={(e) => setSelectedData(e.value)} dataKey="id" tableStyle={{ minWidth: '50rem' }}
                     selectionMode={rowClick ? undefined : 'multiple'}
                     onPage={paginerPageChange}>
