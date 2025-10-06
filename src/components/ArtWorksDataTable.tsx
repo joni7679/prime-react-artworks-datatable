@@ -22,7 +22,7 @@ const ArtWorksDataTable: React.FC = () => {
     const [total, setTotal] = useState(0);
     const [selectedData, setSelectedData] = useState<ArtWork[] | null>(null);
     const [currentPage, setCurrentPage] = useState(0)
-    const [rowClick, setRowClick] = useState<boolean>(true);
+    const [rowClick] = useState<boolean>(true);
     const [inputVal, setInputValue] = useState<string>('');
     const op = useRef(null);
     const toast = useRef<Toast>(null);
@@ -30,8 +30,8 @@ const ArtWorksDataTable: React.FC = () => {
     const getArtWorksData = async (page: number) => {
         setLoading(true);
         try {
-            let res = await axios.get(`https://api.artic.edu/api/v1/artworks?page=${page}`);
-            let finalRes: ArtWork[] = res.data.data;
+            const res = await axios.get(`https://api.artic.edu/api/v1/artworks?page=${page}`);
+            const finalRes: ArtWork[] = res.data.data;
             console.log("finalres", finalRes);
             setData(finalRes)
             console.log("finalres", finalRes);
@@ -50,7 +50,7 @@ const ArtWorksDataTable: React.FC = () => {
     }, [currentPage])
 
     const handlePagination = (e) => {
-        setCurrentPage(e.page)
+        setCurrentPage(e.page + 1)
     }
 
     const showError = () => {
